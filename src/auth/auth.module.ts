@@ -20,6 +20,7 @@ import { ConfigModule } from '@nestjs/config';
   ],
 
   providers: [AuthService, JwtStrategy],
-  controllers: [AuthController] 
+  controllers: [AuthController],
+  exports: [JwtModule], // Export so AuthMiddleware in AppModule can inject JwtService
 })
 export class AuthModule {}

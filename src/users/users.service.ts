@@ -6,7 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { PasswordService } from '../services/password/password.service';
-import { UserRole } from '../common/enums/user-role.enum';
+import { UserRole } from './enums/user-role.enum';
 
 @Injectable()
 export class UsersService {
@@ -28,7 +28,7 @@ export class UsersService {
     const user = this.usersRepository.create({
       ...rest,
       email: normalizedEmail,
-      passwordHash: hashedPassword,
+      password: hashedPassword,
       role: role ?? UserRole.CITIZEN,
     });
     return this.usersRepository.save(user);
@@ -76,7 +76,7 @@ export class UsersService {
     }
 
     if (password) {
-      user.passwordHash = await this.passwordService.hash(password);
+      user.password = await this.passwordService.hash(password);
     }
 
     Object.assign(user, rest);
