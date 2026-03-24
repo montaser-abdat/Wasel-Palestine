@@ -1,13 +1,21 @@
-import { Controller, Body, Post, Get, Request, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Body,
+  Post,
+  Get,
+  Request,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { RegisterDto } from './dto/register.dto';
+import { RegisterDto } from './dto/signup.dto';
 import { SignInDto } from './dto/signin.dto';
 
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('signin')
   @HttpCode(HttpStatus.OK)
@@ -15,7 +23,7 @@ export class AuthController {
     return this.authService.signIn(signInDto.email, signInDto.password);
   }
 
-  @Post('register')
+  @Post('signup')
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
@@ -24,8 +32,7 @@ export class AuthController {
   // Protected route example - returns current user profile
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile(@Request() req) {
+  getProfile(@Request() req: { user: { email: string } }) {
     return req.user.email;
   }
 }
- 

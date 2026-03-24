@@ -1,11 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete,ParseIntPipe,Query} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
 import { CheckpointsService } from './checkpoints.service';
 import { CreateCheckpointDto } from './dto/create-checkpoint.dto';
 import { UpdateCheckpointDto } from './dto/update-checkpoint.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { CheckpointQueryDto } from './dto/checkpoint-query.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-@Controller('checkpoints')
+@UseGuards(JwtAuthGuard)
+@Controller({ path: 'checkpoints/api', version: '1' })
 export class CheckpointsController {
   constructor(private readonly checkpointsService: CheckpointsService) {}
 

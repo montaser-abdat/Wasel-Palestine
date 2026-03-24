@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
+} from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { UserRole } from '../enums/user-role.enum';
 
@@ -19,7 +26,7 @@ export class User {
 
   @Exclude()
   @Column({ name: 'password_hash', nullable: false })
-  passwordHash: string;
+  password: string;
 
   @Column({
     type: 'enum',

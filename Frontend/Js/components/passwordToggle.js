@@ -1,24 +1,20 @@
 (function () {
-	function setupToggle(toggleId) {
-		var icon = document.getElementById(toggleId);
-		if (!icon) return;
+    const togglePasswordIcons = document.querySelectorAll('.toggle-password');
 
-		var input = icon.closest('.input-field').querySelector('input[type="password"], input[type="text"]');
-		if (!input) return;
-
-		icon.addEventListener('click', function () {
-			if (input.type === 'password') {
-				input.type = 'text';
-				icon.classList.remove('fa-eye');
-				icon.classList.add('fa-eye-slash');
-			} else {
-				input.type = 'password';
-				icon.classList.remove('fa-eye-slash');
-				icon.classList.add('fa-eye');
-			}
-		});
-	}
-
-	setupToggle('toggle-signin-password');
-	setupToggle('toggle-signup-password');
+    togglePasswordIcons.forEach(icon => {
+        icon.addEventListener('click', function () {
+            // Find the input field within the same parent
+            const input = this.parentElement.querySelector('input');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                this.classList.remove('fa-eye');
+                this.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                this.classList.remove('fa-eye-slash');
+                this.classList.add('fa-eye');
+            }
+        });
+    });
 })();

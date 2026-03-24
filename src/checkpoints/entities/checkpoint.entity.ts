@@ -67,9 +67,6 @@ currentStatus:CheckpointStatus;
 
 @OneToMany(() => Incident, (incident) => incident.checkpoint)
 incidents: Incident[];
-
-
-
 }
 
 

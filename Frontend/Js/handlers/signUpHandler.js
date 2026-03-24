@@ -24,9 +24,10 @@
 		}
 
 		try {
-			await window.authApi.post('/register', data);
+			await window.authApi.post('/auth/signup', data);
 			window.formHelper.clearFields(signUpForm);
 			window.showSuccess('Signup successful! Please sign in.');
+			document.querySelector('.container').classList.remove('sign-up-mode');
 		} catch (error) {
 			window.showError('Signup failed: ' + window.errorHelper.getErrorText(error));
 		}
