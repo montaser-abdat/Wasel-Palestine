@@ -7,7 +7,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
+  @Post("create")
   @HttpCode(HttpStatus.CREATED)
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
@@ -18,7 +18,7 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Get('search')
+  @Get('search/email')
   findByEmail(@Query('email') email: string) {
     return this.usersService.findByEmail(email);
   }

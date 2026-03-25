@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,10 +8,11 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../Css/signin_signup.css">
-    
+
 </head>
+
 <body>
-    
+
 
     <div class="container">
         <div class="forms-container">
@@ -21,9 +23,10 @@
                         <i class="fas fa-user"></i>
                         <input type="text" placeholder="Email" />
                     </div>
-                    <div class="input-field">
+                    <div class="input-field password-field">
                         <i class="fas fa-lock"></i>
                         <input type="password" placeholder="Password" />
+                        <i class="fas fa-eye toggle-password"></i>
                     </div>
                     <input type="submit" value="Sign in" class="btn solid" id="signin_btn" />
 
@@ -44,28 +47,29 @@
                     </div>
                 </form>
 
-                 <form action="" class="sign-up-form">
+                <form action="" class="sign-up-form">
                     <h2 class="title">Sign Up</h2>
 
                     <div class="first-last">
-                    <div class="input-field">
-                        <i class="fas fa-user"></i>
-                        <input type="text" placeholder="First Name" />
-                    </div>
+                        <div class="input-field">
+                            <i class="fas fa-user"></i>
+                            <input type="text" placeholder="First Name" />
+                        </div>
 
-                    <div class="input-field">
-                        <i class="fas fa-user"></i>
-                        <input type="text" placeholder="Last Name" />
-                    </div>
+                        <div class="input-field">
+                            <i class="fas fa-user"></i>
+                            <input type="text" placeholder="Last Name" />
+                        </div>
                     </div>
 
                     <div class="input-field">
                         <i class="fas fa-user"></i>
                         <input type="text" placeholder="Email" />
                     </div>
-                    <div class="input-field">
+                    <div class="input-field password-field">
                         <i class="fas fa-lock"></i>
                         <input type="password" placeholder="Password" />
+                        <i class="fas fa-eye toggle-password"></i>
                     </div>
 
                     <div class="input-field">
@@ -131,24 +135,28 @@
     <script src="../config/constants.js"></script>
 
     <!-- API -->
-    <script src="../api/authApi.js"></script>
+    <script src="/Js/api/authApi.js"></script>
 
     <!-- Notifications -->
-    <script src="../Js/notifications/alerts.js"></script>
+    <script src="/Js/notifications/alerts.js"></script>
 
     <!-- Helpers -->
-    <script src="../Js/helpers/errorHelper.js"></script>
-    <script src="../Js/helpers/formHelper.js"></script>
+    <script src="/Js/helpers/errorHelper.js"></script>
+    <script src="/Js/helpers/formHelper.js"></script>
 
     <!-- Validation -->
-    <script src="../Js/validation/validators.js"></script>
+    <script src="/Js/validation/validators.js"></script>
 
     <!-- Components -->
-    <script src="../Js/components/panelToggle.js"></script>
+    <script src="/Js/components/panelToggle.js"></script>
+    <script src="/Js/components/passwordToggle.js"></script>
 
     <!-- Handlers -->
-    <script src="../Js/handlers/signInHandler.js"></script>
-    <script src="../Js/handlers/signUpHandler.js"></script>
+    <script type="module" src="/Js/handlers/signInHandler.js"></script>
+    <script type="module" src="/Js/handlers/signUpHandler.js"></script>
+    <script type="module" src="/Js/api/authService.js"></script>
+    <script type="module" src="/Js/api/redirectUserBasedOnRule.js"></script>
 
 </body>
+
 </html>

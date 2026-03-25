@@ -1,4 +1,8 @@
-import { BadRequestException,Injectable, NotFoundException, } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Incident } from './entities/incident.entity';
@@ -11,6 +15,20 @@ import {
   SortOrder,
 } from './dto/incident-query.dto';
 import { IncidentStatus } from './enums/incident-status.enum';
+import { SortStrategy } from './strategies/sort.strategy';
+import { CheckpointStrategy } from './strategies/checkpoint.strategy';
+import {
+  SeverityStrategy,
+  SeverityUpdateStrategy,
+} from './strategies/severity.strategy';
+import { TypeStrategy } from './strategies/type.strategy';
+import {
+  StatusStrategy,
+  StatusUpdateStrategy,
+} from './strategies/status.strategy';
+import { TitleStrategy } from './strategies/title.strategy';
+import { DescriptionStrategy } from './strategies/description.strategy';
+import { TypeUpdateStrategy } from './strategies/type-update.strategy';
 
 @Injectable()
 export class IncidentsService {
@@ -49,54 +67,42 @@ export class IncidentsService {
     return this.incidentsRepository.save(incident);
   }
 
- async findAll(incidentQueryDto: IncidentQueryDto) {
-  const {
-    status,
-    type,
-    severity,
-    checkpointId,
-    sortBy = IncidentSortBy.CREATED_AT,
-    sortOrder = SortOrder.DESC,
-    page = 1,
-    limit = 10,
-  } = incidentQueryDto;
+  async findAll(incidentQueryDto: IncidentQueryDto) {
+    const {
+      status,
+      type,
+      severity,
+      checkpointId,
+      sortBy = IncidentSortBy.CREATED_AT,
+      sortOrder = SortOrder.DESC,
+      page = 1,
+      limit = 10,
+    } = incidentQueryDto;
 
-  const queryBuilder = this.incidentsRepository
-    .createQueryBuilder('incident')
-    .leftJoinAndSelect('incident.checkpoint', 'checkpoint');
+    const queryBuilder = this.incidentsRepository
+      .createQueryBuilder('incident')
+      .leftJoinAndSelect('incident.checkpoint', 'checkpoint');
 
-  if (status) {
-    queryBuilder.andWhere('incident.status = :status', { status });
+    StatusStrategy.apply(queryBuilder, status);
+    TypeStrategy.apply(queryBuilder, type);
+    SeverityStrategy.apply(queryBuilder, severity);
+    CheckpointStrategy.apply(queryBuilder, checkpointId);
+    SortStrategy.apply(queryBuilder, sortBy, sortOrder);
+
+    queryBuilder.skip((page - 1) * limit).take(limit);
+
+    const [data, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
-
-  if (type) {
-    queryBuilder.andWhere('incident.type = :type', { type });
-  }
-
-  if (severity) {
-    queryBuilder.andWhere('incident.severity = :severity', { severity });
-  }
-
-  if (checkpointId) {
-    queryBuilder.andWhere('checkpoint.id = :checkpointId', { checkpointId });
-  }
-
-  queryBuilder.orderBy(`incident.${sortBy}`, sortOrder);
-
-  queryBuilder.skip((page - 1) * limit).take(limit);
-
-  const [data, total] = await queryBuilder.getManyAndCount();
-
-  return {
-    data,
-    meta: {
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    },
-  };
-}
   async findOne(id: number): Promise<Incident> {
     const incident = await this.incidentsRepository.findOne({
       where: { id },
@@ -134,58 +140,44 @@ export class IncidentsService {
       }
     }
 
-    if (updateIncidentDto.title !== undefined) {
-      incident.title = updateIncidentDto.title;
-    }
-
-    if (updateIncidentDto.description !== undefined) {
-      incident.description = updateIncidentDto.description;
-    }
-
-    if (updateIncidentDto.type !== undefined) {
-      incident.type = updateIncidentDto.type;
-    }
-
-    if (updateIncidentDto.severity !== undefined) {
-      incident.severity = updateIncidentDto.severity;
-    }
-
-    if (updateIncidentDto.status !== undefined) {
-      incident.status = updateIncidentDto.status;
-    }
+    TitleStrategy.apply(incident, updateIncidentDto);
+    DescriptionStrategy.apply(incident, updateIncidentDto);
+    TypeUpdateStrategy.apply(incident, updateIncidentDto);
+    SeverityUpdateStrategy.apply(incident, updateIncidentDto);
+    StatusUpdateStrategy.apply(incident, updateIncidentDto);
 
     return this.incidentsRepository.save(incident);
   }
 
   async verify(id: number, userId: number): Promise<Incident> {
-  const incident = await this.findOne(id);
+    const incident = await this.findOne(id);
 
-  if (incident.status === IncidentStatus.CLOSED) {
-    throw new BadRequestException('Closed incident cannot be verified');
+    if (incident.status === IncidentStatus.CLOSED) {
+      throw new BadRequestException('Closed incident cannot be verified');
+    }
+
+    if (incident.status === IncidentStatus.VERIFIED) {
+      throw new BadRequestException('Incident is already verified');
+    }
+
+    incident.status = IncidentStatus.VERIFIED;
+    incident.verifiedByUserId = userId;
+    incident.verifiedAt = new Date();
+
+    return this.incidentsRepository.save(incident);
   }
 
-  if (incident.status === IncidentStatus.VERIFIED) {
-    throw new BadRequestException('Incident is already verified');
+  async close(id: number, userId: number): Promise<Incident> {
+    const incident = await this.findOne(id);
+
+    if (incident.status === IncidentStatus.CLOSED) {
+      throw new BadRequestException('Incident is already closed');
+    }
+
+    incident.status = IncidentStatus.CLOSED;
+    incident.closedByUserId = userId;
+    incident.closedAt = new Date();
+
+    return this.incidentsRepository.save(incident);
   }
-
-  incident.status = IncidentStatus.VERIFIED;
-  incident.verifiedByUserId = userId;
-  incident.verifiedAt = new Date();
-
-  return this.incidentsRepository.save(incident);
-}
-
-async close(id: number, userId: number): Promise<Incident> {
-  const incident = await this.findOne(id);
-
-  if (incident.status === IncidentStatus.CLOSED) {
-    throw new BadRequestException('Incident is already closed');
-  }
-
-  incident.status = IncidentStatus.CLOSED;
-  incident.closedByUserId = userId;
-  incident.closedAt = new Date();
-
-  return this.incidentsRepository.save(incident);
-}
 }

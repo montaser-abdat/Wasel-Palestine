@@ -4,6 +4,7 @@ import { ValidationPipe, VersioningType, ClassSerializerInterceptor } from '@nes
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableShutdownHooks();
 
   // to allow frontend to access the API from a different origin (CORS)
   app.enableCors({
@@ -11,7 +12,9 @@ async function bootstrap() {
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
-  
+
+  app.setGlobalPrefix('api'); // Add 'api' prefix to all routes
+
   // Enable API versioning
   app.enableVersioning({
     type: VersioningType.URI,
@@ -20,7 +23,7 @@ async function bootstrap() {
 
   // Enable global serialization (for @Exclude() decorators)
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
-  
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -32,8 +35,7 @@ async function bootstrap() {
       },
     }),
   );
-  
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
- 
