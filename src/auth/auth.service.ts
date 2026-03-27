@@ -1,30 +1,35 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
-import { PasswordService } from 'src/services/password/password.service';   
+import { PasswordService } from 'src/services/password/password.service';
 import { JwtService } from '@nestjs/jwt';
-import { RegisterDto } from './dto/register.dto';
+import { RegisterDto } from './dto/signup.dto';
 import { User } from 'src/users/entities/user.entity';
-
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService, 
-    private jwtService: JwtService, 
-    private passwordService: PasswordService
-  ) {}
+    private usersService: UsersService,
+    private jwtService: JwtService,
+    private passwordService: PasswordService,
+  ) { }
 
   /**
    * Sign in user and return JWT token
    */
-  async signIn(email: string, password: string): Promise<{ access_token: string }> {
+  async signIn(
+    email: string,
+    password: string,
+  ): Promise<{ access_token: string; user: any }> {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid = await this.passwordService.compare(password, user.passwordHash);
+    const isPasswordValid = await this.passwordService.compare(
+      password,
+      user.password,
+    );
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
@@ -36,8 +41,7 @@ export class AuthService {
   /**
    * Register new user and return JWT token
    */
-  async register(registerDto: RegisterDto): Promise<{ access_token: string }> {
-    
+  async register(registerDto: RegisterDto): Promise<{ access_token: string; user: any }> {
     const user = await this.usersService.create({
       email: registerDto.email,
       password: registerDto.password,
@@ -50,18 +54,22 @@ export class AuthService {
     return this.generateToken(user);
   }
 
-  /**
-   * Generate JWT access token for user
-   */
-  private generateToken(user: User): { access_token: string } {
+  private generateToken(user: User): { access_token: string; user: any } {
     const payload = {
       sub: user.id,
       email: user.email,
       role: user.role,
     };
-    
+
     return {
-      access_token: this.jwtService.sign(payload)
+      access_token: this.jwtService.sign(payload),
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        firstname: user.firstname,
+        lastname: user.lastname
+      }
     };
   }
 }
