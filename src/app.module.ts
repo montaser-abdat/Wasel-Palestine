@@ -11,6 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 import { CheckpointsModule } from './checkpoints/checkpoints.module';
 import { IncidentsModule } from './incidents/incidents.module';
 import { AuthMiddleware } from './auth/guards/authMiddleware';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { AuthMiddleware } from './auth/guards/authMiddleware';
       rootPath: join(__dirname, '..', 'Frontend'),
       exclude: ['/api*wildcard'],
     }),
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
