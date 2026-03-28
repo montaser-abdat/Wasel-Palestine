@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { ReportQueryDto } from './dto/report-query.dto';
+import { ReportStatus } from './enums/report-status.enum';
 
 @Injectable()
 export class ReportsService {
@@ -13,10 +14,17 @@ export class ReportsService {
     private readonly reportRepo: Repository<Report>,
   ) {}
 
-  create(dto: CreateReportDto) {
-    const report = this.reportRepo.create(dto);
-    return this.reportRepo.save(report);
+async create(dto: CreateReportDto) {
+  const duplicate = await this.findDuplicate(dto);
+
+  const report = this.reportRepo.create(dto);
+
+  if (duplicate) {
+    report.duplicateOf = duplicate.id;
   }
+
+  return this.reportRepo.save(report);
+}
 
 async findAll(query: ReportQueryDto) {
   let {  category, status, sort, sortOrder, page = 1, limit = 10, } = query;
@@ -70,4 +78,54 @@ async findAll(query: ReportQueryDto) {
     Object.assign(report, dto);
     return this.reportRepo.save(report);
   }
+
+
+  async findDuplicate(reportDto: CreateReportDto) {
+
+    const timeWindow= new Date(Date.now() - 30*60*1000);
+      return this.reportRepo
+    .createQueryBuilder('report')
+    .where('report.category = :category', { category: reportDto.category })
+    .andWhere('report.createdAt >= :timeWindow', { timeWindow })
+   .andWhere(`
+  (6371000 * acos(
+    cos(radians(:lat)) *
+    cos(radians(report.latitude)) *
+    cos(radians(report.longitude) - radians(:lng)) +
+    sin(radians(:lat)) *
+    sin(radians(report.latitude))
+  )) < 50
+`, {
+  lat: reportDto.latitude,
+  lng: reportDto.longitude,
+})
+    .getOne();
+
+
+  }
+
+async markUnderReview(id: number) {
+  const report = await this.findOne(id);
+  report.status = ReportStatus.UNDER_REVIEW;
+  return this.reportRepo.save(report);
+}
+
+async approve(id: number) {
+  const report = await this.findOne(id);
+  report.status = ReportStatus.APPROVED;
+  return this.reportRepo.save(report);
+}
+
+async reject(id: number) {
+  const report = await this.findOne(id);
+  report.status = ReportStatus.REJECTED;
+  return this.reportRepo.save(report);
+}
+
+async resolve(id: number) {
+  const report = await this.findOne(id);
+  report.status = ReportStatus.RESOLVED;
+  return this.reportRepo.save(report);
+}
+
 }

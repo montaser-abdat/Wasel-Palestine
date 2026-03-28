@@ -29,5 +29,25 @@ update(
 ) {
   return this.reportsService.update(id, dto);
 }
+
+@Patch(':id/review')
+markUnderReview(@Param('id', ParseIntPipe) id: number) {
+  return this.reportsService.markUnderReview(id);
+}
+
+@Patch(':id/approve')
+approve(@Param('id', ParseIntPipe) id: number) {
+  return this.reportsService.approve(id);
+}
+
+@Patch(':id/reject')
+reject(@Param('id', ParseIntPipe) id: number) {
+  return this.reportsService.reject(id);
+}
+
+@Patch(':id/resolve')
+resolve(@Param('id', ParseIntPipe) id: number) {
+  return this.reportsService.resolve(id);
+}
   
 }

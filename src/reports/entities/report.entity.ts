@@ -37,4 +37,7 @@ status: ReportStatus;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+@Column({ nullable: true })
+duplicateOf?: number;
 }
