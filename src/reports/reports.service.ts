@@ -4,6 +4,7 @@ import { Report } from './entities/report.entity';
 import { Repository } from 'typeorm';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
+import { ReportQueryDto } from './dto/report-query.dto';
 
 @Injectable()
 export class ReportsService {
@@ -17,9 +18,46 @@ export class ReportsService {
     return this.reportRepo.save(report);
   }
 
-  findAll() {
-    return this.reportRepo.find();
+async findAll(query: ReportQueryDto) {
+  let {  category, status, sort, sortOrder, page = 1, limit = 10, } = query;
+
+  page = Math.max(Number(page) || 1, 1);
+  limit = Math.min(Math.max(Number(limit) || 10, 1), 100);
+
+  if (sort) sort = sort.trim();
+
+  const queryBuilder = this.reportRepo.createQueryBuilder('report');
+
+
+  if (category) {
+    queryBuilder.andWhere('report.category = :category', { category });
   }
+
+  if (status) {
+    queryBuilder.andWhere('report.status = :status', { status });
+  }
+
+  const allowedSortFields = ['createdAt', 'status', 'category'];
+
+  let order: 'ASC' | 'DESC' = 'DESC'; 
+
+  if (sortOrder === 'ASC' || sortOrder === 'DESC') {
+    order = sortOrder;
+  }
+
+  if (sort && allowedSortFields.includes(sort)) {
+    queryBuilder.orderBy(`report.${sort}`, order);
+  } else {
+    queryBuilder.orderBy('report.createdAt', 'DESC');
+  }
+
+  queryBuilder.skip((page - 1) * limit).take(limit);
+
+
+  const [data, total] = await queryBuilder.getManyAndCount();
+
+  return { data,  total,  page,  limit,  totalPages: Math.ceil(total / limit), };
+}
 
   async findOne(id: number) {
     const report = await this.reportRepo.findOne({ where: { id } });
