@@ -179,5 +179,6 @@ export class IncidentsService {
     incident.closedAt = new Date();
 
     return this.incidentsRepository.save(incident);
+    
   }
 }
