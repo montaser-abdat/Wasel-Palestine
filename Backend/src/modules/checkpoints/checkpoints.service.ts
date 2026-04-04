@@ -158,4 +158,14 @@ async updateStatus(
     return this.checkpointsRepository.count({ where: { currentStatus: CheckpointStatus.ACTIVE } });
   }
 
+  async findActiveForRouteEstimation(): Promise<Checkpoint[]> {
+  return this.checkpointsRepository.find({
+    where: {
+      currentStatus: CheckpointStatus.ACTIVE,
+    },
+  });
+}
+
+
+
 }

@@ -42,7 +42,7 @@ export class ReportCredibilityService {
     const exists = await this.voteRepo.findOne({ where: { reportId, userId } });
     if (exists) throw new BadRequestException('Already voted');
 
-    await this.reportRepo.save({ reportId, userId, type });
+    await this.reportRepo.save({  reportId, userId, type });
 
     await this.updateReportConfidence(reportId);
   }

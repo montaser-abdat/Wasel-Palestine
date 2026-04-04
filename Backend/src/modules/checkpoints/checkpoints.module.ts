@@ -11,5 +11,6 @@ import { CheckpointStatusHistory } from './entities/status-history.entity';
   ],
   controllers: [CheckpointsController],
   providers: [CheckpointsService],
+  exports: [CheckpointsService],
 })
 export class CheckpointsModule {}

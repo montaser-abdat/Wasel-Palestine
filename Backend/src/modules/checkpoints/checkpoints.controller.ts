@@ -89,4 +89,7 @@ export class CheckpointsController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.checkpointsService.remove(id);
   }
+
+  
+
 }
