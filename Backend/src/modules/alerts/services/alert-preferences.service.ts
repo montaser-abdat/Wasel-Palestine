@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 
@@ -168,6 +164,24 @@ export class AlertPreferencesService {
 
     return this.preferenceRepository.manager.transaction(async (manager) => {
       const preferenceRepository = manager.getRepository(AlertPreference);
+
+      // Mohammad's Addition: Check for existing preference and return it if found
+      const existing = await preferenceRepository
+        .createQueryBuilder('preference')
+        .where('preference.userId = :userId', { userId: validatedUserId })
+        .andWhere('LOWER(TRIM(preference.geographicArea)) = :geographicArea', {
+          geographicArea: this.normalizeAreaForLookup(dto.geographicArea),
+        })
+        .andWhere('preference.incidentCategory = :incidentCategory', {
+          incidentCategory: this.normalizeCategory(dto.incidentCategory),
+        })
+        .andWhere('preference.isActive = :isActive', { isActive: true })
+        .getOne();
+
+      if (existing) {
+        return existing;
+      }
+
       await this.ensureNoDuplicatePreferences(
         manager,
         validatedUserId,
@@ -183,6 +197,7 @@ export class AlertPreferencesService {
 
       const savedPreference = await preferenceRepository.save(newPreference);
 
+      // Montaser's Addition: Send admin notification upon successful save
       await this.createAdminSubscriptionNotification(
         manager,
         validatedUserId,
@@ -246,7 +261,7 @@ export class AlertPreferencesService {
       where: { id: preferenceId, userId: validatedUserId },
     });
     if (!preference) {
-      throw new NotFoundException('Subscription not found');
+      return { message: 'Successfully unsubscribed' };
     }
 
     await this.preferenceRepository.remove(preference);

@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -117,10 +116,6 @@ export class ReportCredibilityService {
 
     this.ensureInteractiveStatus(report);
 
-    if (report.submittedByUserId === userId) {
-      throw new ForbiddenException('You cannot vote on your own report');
-    }
-
     const existingVote = await this.voteRepo.findOne({
       where: { reportId, userId },
     });
@@ -160,10 +155,6 @@ export class ReportCredibilityService {
     }
 
     this.ensureInteractiveStatus(report);
-
-    if (report.submittedByUserId === userId) {
-      throw new ForbiddenException('You cannot confirm your own report');
-    }
 
     const existingConfirmation = await this.confirmRepo.findOne({
       where: { reportId, userId },
