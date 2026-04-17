@@ -1,11 +1,17 @@
 <p align="center">
-  <img src="docs/assets/wasel-palestine-logo.svg" width="150" alt="Wasel Palestine logo" />
+  <img src="assets/logo.png" width="280"/>
 </p>
 
-<h1 align="center">Wasel Palestine</h1>
+<h2 align="center">🚀 Wasel-Palestine</h2>
 
 <p align="center">
-  <strong>Traffic awareness, civic reporting, alerts, and route assistance for Palestine.</strong>
+  Smart Route Optimization & Checkpoint Awareness System
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/status-active-success"/>
+  <img src="https://img.shields.io/badge/backend-NestJS-red"/>
+  <img src="https://img.shields.io/badge/frontend-Next.js-blue"/>
 </p>
 
 <p align="center">
