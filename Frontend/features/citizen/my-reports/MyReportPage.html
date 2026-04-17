@@ -1,0 +1,90 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Reports</title>
+    <link rel="stylesheet" href="MyReportPage.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
+  
+    <!-- Auth Guard -->
+    <script type="module">
+      import { checkAuth } from '/core/auth/authGuard.js';
+      checkAuth();
+    </script></head>
+  <body>
+    <div id="spa-page-myreports">
+      <div
+        id="modalOverlay"
+        class="overlay hidden"
+        onclick="if (event.target === this) closeMyReportModal();"
+      >
+        <div class="modalContent"></div>
+      </div>
+      <main class="reports-container">
+        <header class="reports-header">
+          <div class="header-text">
+            <h2>My Reports</h2>
+            <p data-reports-view-copy>Track your submitted reports and their status</p>
+          </div>
+          <button class="btn-primary" onclick="openMyReportModal()">
+            <span class="material-symbols-outlined">add</span>
+            Submit New Report
+          </button>
+        </header>
+
+        <div class="reports-view-toolbar">
+          <div class="reports-view-switch">
+            <button class="view-switch-btn active" type="button" data-reports-view="my">
+              My Reports
+            </button>
+            <button class="view-switch-btn" type="button" data-reports-view="community">
+              Community Feed
+            </button>
+          </div>
+          <button
+            class="btn-outline btn-inline-action"
+            type="button"
+            data-community-refresh-location
+            hidden
+          >
+            Refresh Nearby Feed
+          </button>
+        </div>
+
+        <nav class="filter-tabs" data-reports-status-nav>
+          <div class="tabs-scroll">
+            <button class="tab-item active" type="button" data-report-status-tab="all">
+              All <span class="badge-count">0</span>
+            </button>
+            <button class="tab-item" type="button" data-report-status-tab="pending">
+              Pending <span class="badge-count muted">0</span>
+            </button>
+            <button class="tab-item" type="button" data-report-status-tab="verified">
+              Verified <span class="badge-count muted">0</span>
+            </button>
+            <button class="tab-item" type="button" data-report-status-tab="rejected">
+              Rejected <span class="badge-count muted">0</span>
+            </button>
+          </div>
+        </nav>
+
+        <div class="reports-list" data-reports-list></div>
+
+        <footer class="pagination-container">
+          <p class="pagination-info" data-reports-pagination-info>
+            Showing 0 reports
+          </p>
+          <div class="pagination-controls" data-reports-pagination-controls></div>
+        </footer>
+      </main>
+    </div>
+
+    <script src="/features/citizen/my-reports/SubmitReport.js"></script>
+    <script src="/features/citizen/my-reports/SubmitReport_btn.js"></script>
+    <script src="/features/citizen/my-reports/MyReportPage.js"></script>
+  </body>
+</html>

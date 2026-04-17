@@ -1,0 +1,61 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alert Subscriptions</title>
+    <link rel="stylesheet" href="Alerts.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
+  
+    <!-- Auth Guard -->
+    <script type="module">
+      import { checkAuth } from '/core/auth/authGuard.js';
+      checkAuth();
+    </script></head>
+  <body>
+    <div id="spa-page-alerts">
+      <div id="modalOverlay" class="overlay hidden">
+        <div class="modalContent">
+
+        </div>
+      </div>
+      <main class="alert-container">
+        <header class="alert-header">
+          <div class="header-content">
+            <h2 class="title">My Alert Subscriptions</h2>
+            <p class="subtitle">
+              Stay informed about mobility changes in your areas
+            </p>
+          </div>
+          <button class="btn-add" onclick="openAlertModal()">
+            <span class="material-symbols-outlined">add</span>
+            Add Subscription
+          </button>
+        </header>
+
+        <div class="subscription-list" data-alert-subscription-list>
+          <article class="subscription-card subscription-card--status">
+            <div class="card-body">
+              <p class="category-label">Loading</p>
+              <div>
+                <h3 class="region-name">Loading subscriptions...</h3>
+                <p class="region-subtext">
+                  Your saved locations and categories will appear here.
+                </p>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="subscription-summary">
+          <p data-alert-summary-count>Loading subscriptions...</p>
+        </div>
+      </main>
+    </div>
+    <script src="/features/citizen/alerts/Alerts.js"></script>
+    <script src="/features/citizen/alerts/AddSubscription_btn.js"></script>
+  </body>
+</html>

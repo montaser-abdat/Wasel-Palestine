@@ -1,0 +1,4 @@
+export enum RouteConstraintType {
+  AVOID_CHECKPOINTS = 'AVOID_CHECKPOINTS',
+  AVOID_INCIDENTS = 'AVOID_INCIDENTS',
+}

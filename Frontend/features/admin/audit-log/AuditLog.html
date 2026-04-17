@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Wasel Palestine | AuditLog</title>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="/views/admin/shell/admin-shell.css" />
+    <link rel="stylesheet" href="./AuditLog.css" />
+    <link rel="preload" href="./AuditLog.css" as="style"/>
+    <link rel="stylesheet" href="/assets/styles/variables.css"/>
+
+    <script type="module">
+      import { checkAuth } from '/core/auth/authGuard.js';
+      checkAuth();
+    </script>
+</head>
+<body class="admin-body">
+<div class="audit-page">
+    <header class="audit-header">
+        <div class="header-titles">
+            <h2 class="title">Audit Log</h2>
+            <p class="subtitle">Complete record of all moderation actions</p>
+        </div>
+        <button class="btn-export" type="button" data-audit-export>
+            Export CSV
+            <span class="material-symbols-outlined icon">download</span>
+        </button>
+    </header>
+
+    <div class="audit-toolbar">
+        <div class="toolbar-group">
+            <div class="search-box">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input class="search-input" placeholder="Search actions..." type="text" data-audit-search/>
+            </div>
+            <div class="filter-controls">
+                <select class="filter-dropdown" data-audit-action-filter>
+                    <option value="">All Actions</option>
+                    <option value="CREATED">Created</option>
+                    <option value="UPDATED">Updated</option>
+                    <option value="DELETED">Deleted</option>
+                    <option value="APPROVED">Approved</option>
+                    <option value="REJECTED">Rejected</option>
+                </select>
+                <select class="filter-dropdown" data-audit-actor-filter>
+                    <option value="">All Moderators</option>
+                </select>
+                <div class="date-picker-box">
+                    <span class="material-symbols-outlined date-icon">calendar_month</span>
+                    <input class="date-input" type="date" data-audit-date-filter/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="audit-table-container">
+        <div class="table-scroll">
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th class="col-index">#</th>
+                        <th class="col-action">Action</th>
+                        <th class="col-target">Target</th>
+                        <th>Description</th>
+                        <th class="col-user">Submitted By</th>
+                        <th class="col-time">Time</th>
+                        <th class="col-decision">Review</th>
+                    </tr>
+                </thead>
+                <tbody data-audit-table-body>
+                    <tr>
+                        <td colspan="7" class="cell-details">Loading audit log...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-footer">
+            <p class="pagination-info">
+                Showing <span class="count" data-audit-pagination-range>0-0</span> of <span class="count" data-audit-pagination-total>0</span> entries
+            </p>
+            <div class="pagination-controls" data-audit-pagination-controls>
+                <button class="btn-page nav-btn" disabled>PREV</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="module" src="./AuditLog.js"></script>
+</body>
+</html>

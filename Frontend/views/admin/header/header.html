@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Wasel Palestine | Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/views/admin/shell/admin-shell.css" />
+  <link rel="stylesheet" href="/views/admin/sidebar/sidebar.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="/core/config/constants.js"></script>
+  <script type="module" src="/views/admin/header/admin-settings-runtime.js"></script>
+  <script src="/views/admin/header/darkmode.js"></script>
+  <script src="/views/admin/header/header.profile_button.js" defer></script>
+  <script src="/views/admin/header/header.profile-modal.js?v=profile-db-save-20260417-2" defer></script>
+  <script src="/views/admin/header/header.logout-modal.js" defer></script>
+  <script src="/views/admin/header/header.notifications_button.js" defer></script>
+  <script type="module" src="/features/admin/dashboard/Dashboard.js" defer></script>
+  <script src="/shared/ui-kit/notifications/alerts.js" defer></script>
+  <script src="/features/admin/user-management/users_filter.js" defer></script>
+
+  <script src="/features/admin/incidents/Incidents.js" defer></script>
+  <script src="/features/admin/checkpoint-management/Checkpoints.js" defer></script>
+  <!-- Auth Guard -->
+  <script type="module">
+    import { checkAuth } from '/core/auth/authGuard.js';
+    checkAuth();
+  </script>
+</head>
+
+<body class="admin-body">
+  <div class="app-container">
+    <!-- Sidebar placeholder -->
+    <aside id="sidebar-mount" class="sidebar sidebar-expanded"></aside>
+
+    <main class="main-wrapper">
+      <!-- Header bar -->
+      <header class="app-header shadow-sm">
+        <div class="header-left">
+          <button class="menu-toggle" id="sidebarToggle">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+          <div class="breadcrumb">
+            <span class="text-muted text-sm">Dashboard</span>
+            <span class="text-muted text-sm mx-2">/</span>
+            <span class="font-bold text-dark text-sm" id="current-page-title">Analytics</span>
+          </div>
+        </div>
+
+        <div class="header-center">
+          <nav class="desktop-nav">
+            <a href="#admin-dashboard" class="nav-link active" onclick="adminRoute(event)">Home</a>
+            <a href="#admin-incidents" class="nav-link" onclick="adminRoute(event)">Incidents</a>
+            <a href="#admin-checkpoints" class="nav-link" onclick="adminRoute(event)">Checkpoint</a>
+          </nav>
+        </div>
+
+        <div class="header-right">
+          <!-- Theme Toggle -->
+          <button class="theme-toggle" id="themeToggle" aria-label="Toggle Theme">
+            <span class="material-symbols-outlined icon-light">light_mode</span>
+            <span class="material-symbols-outlined icon-dark">dark_mode</span>
+          </button>
+          <div class="notifications-dropdown-wrapper">
+            <button class="nav-icon-btn hover-text" id="headerNotificationsBtn" aria-label="Notifications">
+              <span class="material-symbols-outlined">notifications</span>
+              <span class="notification-badge" id="adminNotificationsBadge" hidden>0</span>
+            </button>
+
+            <div class="notifications-dropdown-menu" id="notificationsDropdown">
+              <div class="notifications-header">
+                <h4 class="m-0 font-bold text-dark">Notifications</h4>
+                <button class="mark-read-btn" id="adminNotificationsMarkReadBtn" hidden>Mark all read</button>
+              </div>
+              <div class="notifications-list" id="adminNotificationsList">
+                <div class="notification-empty-state">No notifications yet.</div>
+              </div>
+              <div class="notifications-footer">
+                <a href="#admin-dashboard" onclick="adminRoute(event)">View all notifications</a>
+              </div>
+            </div>
+          </div>
+          <div class="profile-dropdown-wrapper">
+            <button class="profile-btn hover-text" id="headerProfileBtn" aria-label="Profile">
+              U
+            </button>
+
+            <div class="profile-dropdown-menu" id="profileDropdown">
+              <button class="dropdown-item" id="openProfileModalBtn">
+                <span class="material-symbols-outlined">person</span>
+                Profile
+              </button>
+              <button class="dropdown-item text-danger" id="logoutBtn">
+                <span class="material-symbols-outlined">logout</span>
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Flexible Main for Router content -->
+      <div id="flexible_main" class="content-scrollable">
+        <!-- Page content loaded here by router -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/views/admin/sidebar/sidebar.js"></script>
+  <script src="/core/routing/admin/routing.config.js"></script>
+  <script src="/core/routing/admin/route.utils.js"></script>
+  <script src="/core/routing/admin/runtime.manager.js"></script>
+  <script src="/core/routing/admin/navigation.controller.js"></script>
+  <script src="/core/routing/admin/main.js"></script>
+  <script src="/features/admin/profile/ApplyHeaderAvatar.js?v=profile-db-save-20260417-2"></script>
+  <script src="/features/admin/profile/AvatarUpload.js?v=profile-db-save-20260417-2"></script>
+  <script>
+    // Inject Sidebar
+    fetch('/views/admin/sidebar/sidebar.html?v=' + new Date().getTime())
+      .then((res) => res.text())
+      .then((html) => {
+        const mount = document.getElementById('sidebar-mount');
+        if (mount) {
+          mount.outerHTML = html;
+          if (window.initSidebar) window.initSidebar();
+          window.applyAdminSystemSettings?.(window.AdminSystemSettings || {});
+
+          const runtime = window.AdminRouting?.runtime;
+          const routeUtils = window.AdminRouting?.routeUtils;
+          if (runtime && routeUtils) {
+            const current = routeUtils.normalizeRoute(
+              window.location.hash,
+              'admin-dashboard',
+            );
+            runtime.updateActiveNav?.(current);
+          }
+        }
+      })
+      .catch((e) => console.log('Sidebar not injected automatically'));
+  </script>
+</body>
+
+</html>

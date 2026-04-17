@@ -1,0 +1,305 @@
+/* Base Variables & Reset */
+/* Base Variables & Reset */
+.alerts-add-subscription {
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --text-main: #1e293b;
+  --text-muted: #475569;
+  --border-color: #e2e8f0;
+  --bg-color: #ffffff;
+  --bg-body: #f1f5f9;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+}
+
+.alerts-add-subscription.dark {
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
+  --bg-color: #1e293b;
+  --bg-body: #0f172a;
+}
+
+.alerts-add-subscription,
+.alerts-add-subscription * {
+  box-sizing: border-box;
+}
+
+.alerts-add-subscription * {
+  margin: 0;
+  padding: 0;
+}
+
+/* Modal Container */
+.alerts-add-subscription .modal-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  width: 100%;
+}
+
+.alerts-add-subscription .modal {
+  background-color: var(--bg-color);
+  width: 100%;
+  max-width: 480px;
+  border-radius: 12px;
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Header */
+.alerts-add-subscription .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.alerts-add-subscription .modal-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.alerts-add-subscription .close-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.alerts-add-subscription .close-btn:hover {
+  background-color: var(--bg-body);
+  color: var(--text-main);
+}
+
+/* Body */
+.alerts-add-subscription .modal-body {
+  padding: 1.5rem;
+}
+
+.alerts-add-subscription .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.alerts-add-subscription .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.alerts-add-subscription .form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+/* Text Input */
+.alerts-add-subscription .form-input {
+  width: 100%;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.alerts-add-subscription .form-input::placeholder {
+  color: #94a3b8;
+}
+
+.alerts-add-subscription .form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.alerts-add-subscription .form-help {
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+/* Checkbox Grid */
+.alerts-add-subscription .checkbox-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.alerts-add-subscription .checkbox-card {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+
+.alerts-add-subscription .checkbox-card:hover {
+  background-color: var(--bg-body);
+}
+
+.alerts-add-subscription .checkbox-card.is-selected {
+  border-color: rgba(37, 99, 235, 0.35);
+  background-color: rgba(37, 99, 235, 0.06);
+}
+
+/* Hide standard checkbox */
+.alerts-add-subscription .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Custom Checkbox Design */
+.alerts-add-subscription .checkbox-custom {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  margin-right: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  background-color: var(--bg-color);
+}
+
+/* Checked State Styling */
+.alerts-add-subscription .sr-only:checked + .checkbox-custom {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.alerts-add-subscription .sr-only:checked + .checkbox-custom::after {
+  content: "";
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-bottom: 2px;
+}
+
+/* Focus state for accessibility */
+.alerts-add-subscription .sr-only:focus-visible + .checkbox-custom {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.alerts-add-subscription .checkbox-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.alerts-add-subscription .form-feedback {
+  margin-top: 1rem;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.alerts-add-subscription .form-feedback[data-feedback-type="error"] {
+  background-color: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
+}
+
+.alerts-add-subscription .form-feedback[data-feedback-type="success"] {
+  background-color: rgba(34, 197, 94, 0.08);
+  color: #15803d;
+}
+
+/* Footer */
+.alerts-add-subscription .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-body);
+}
+
+/* Buttons */
+.alerts-add-subscription .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px; /* Forces exact same height for all buttons */
+  padding: 0 1.25rem; /* Removed vertical padding since height controls it */
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.alerts-add-subscription .modal-footer .btn-secondary {
+  min-width: 110px;
+}
+
+.alerts-add-subscription .modal-footer .btn-primary {
+  min-width: 120px;
+}
+
+.alerts-add-subscription .btn-secondary {
+  background-color: var(--bg-color);
+  border-color: var(--border-color);
+  color: var(--text-muted);
+}
+
+.alerts-add-subscription .btn-secondary:hover {
+  background-color: var(--bg-body);
+  color: var(--text-main);
+}
+
+.alerts-add-subscription .btn-primary {
+  background-color: var(--primary);
+  color: var(--bg-color);
+}
+
+.alerts-add-subscription .btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.alerts-add-subscription .btn:disabled,
+.alerts-add-subscription .form-input:disabled,
+.alerts-add-subscription .sr-only:disabled + .checkbox-custom,
+.alerts-add-subscription .sr-only:disabled ~ .checkbox-label {
+  cursor: not-allowed;
+  opacity: 0.7;
+}

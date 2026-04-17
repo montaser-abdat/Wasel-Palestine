@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Wasel Palestine | ModerationQueue</title>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="/views/admin/shell/admin-shell.css" />
+    <link rel="stylesheet" href="./ModerationQueue.css" />
+    <link rel="stylesheet" href="/assets/styles/variables.css"/>
+
+    <script type="module">
+      import { checkAuth } from '/core/auth/authGuard.js';
+      checkAuth();
+    </script>
+</head>
+<body class="admin-body">
+<div class="mq-page">
+    <header class="mq-header">
+        <div class="mq-header-title-group">
+            <h2 class="title">Moderation Queue</h2>
+            <span class="badge badge-yellow" data-moderation-pending-count>0 pending</span>
+        </div>
+    </header>
+
+    <div class="mq-filter-card">
+        <div class="mq-filter-grid">
+            <div class="filter-col">
+                <label class="filter-label">Search</label>
+                <input class="filter-input" placeholder="Search reports..." type="text" data-moderation-search />
+            </div>
+
+            <div class="filter-col">
+                <label class="filter-label">Category</label>
+                <select class="filter-select" data-moderation-category>
+                    <option value="">All Categories</option>
+                    <option value="road_closure">Road Closure</option>
+                    <option value="checkpoint_issue">Checkpoint Issue</option>
+                    <option value="delay">Delay</option>
+                    <option value="accident">Accident</option>
+                    <option value="hazard">Hazard</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="filter-col toggle-col">
+                <button class="toggle-btn" type="button" data-moderation-duplicates-toggle>
+                    <span class="toggle-thumb"></span>
+                </button>
+                <span class="toggle-label">Duplicates only</span>
+            </div>
+
+            <div class="filter-col">
+                <label class="filter-label">Sort By</label>
+                <select class="filter-select" data-moderation-sort>
+                    <option value="createdAt:DESC">Newest First</option>
+                    <option value="createdAt:ASC">Oldest First</option>
+                    <option value="confidenceScore:DESC">Highest Score</option>
+                </select>
+            </div>
+
+            <div class="filter-col filter-col-clear">
+                <!-- Revealed by the renderer whenever any filter is active -->
+                <button
+                    class="btn-clear-filters"
+                    type="button"
+                    data-moderation-clear-filters
+                    hidden
+                    aria-label="Clear all filters"
+                >
+                    <span class="material-symbols-outlined">filter_alt_off</span>
+                    Clear Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mq-table-container">
+        <div class="table-scroll">
+            <table class="mq-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Category</th>
+                        <th>Location</th>
+                        <th>Description</th>
+                        <th>Submitted By</th>
+                        <th>Time</th>
+                        <th class="text-center">Score</th>
+                        <th class="text-center">Flags</th>
+                        <th class="text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody data-moderation-table-body></tbody>
+            </table>
+        </div>
+
+        <div class="pagination-footer">
+            <p class="pagination-info" data-moderation-pagination-info>Showing 0 reports</p>
+            <div class="pagination-controls" data-moderation-pagination-controls></div>
+        </div>
+    </div>
+
+    <div class="mq-modal-overlay" data-moderation-modal hidden>
+        <div class="mq-modal-card">
+            <div class="mq-modal-header">
+                <div>
+                    <h3 data-moderation-modal-title>Review Report</h3>
+                    <p class="mq-modal-subtitle">
+                        <span data-moderation-modal-status>Pending</span>
+                        &bull;
+                        <span data-moderation-modal-time>Unknown time</span>
+                    </p>
+                </div>
+                <button class="mq-modal-close" type="button" data-moderation-close>
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <div class="mq-modal-body">
+                <div class="mq-modal-grid">
+                    <div class="mq-modal-field">
+                        <span class="mq-modal-label">Location</span>
+                        <span data-moderation-modal-location>-</span>
+                    </div>
+                    <div class="mq-modal-field">
+                        <span class="mq-modal-label">Reporter</span>
+                        <span data-moderation-modal-reporter>-</span>
+                    </div>
+                    <div class="mq-modal-field">
+                        <span class="mq-modal-label">Confidence</span>
+                        <span data-moderation-modal-confidence>-</span>
+                    </div>
+                    <div class="mq-modal-field">
+                        <span class="mq-modal-label">Vote Summary</span>
+                        <span data-moderation-modal-votes>-</span>
+                    </div>
+                    <div class="mq-modal-field">
+                        <span class="mq-modal-label">Duplicate Flag</span>
+                        <span data-moderation-modal-duplicate>-</span>
+                    </div>
+                </div>
+
+                <div class="mq-modal-field mq-modal-field-block">
+                    <span class="mq-modal-label">Description</span>
+                    <p class="mq-modal-description" data-moderation-modal-description></p>
+                </div>
+
+                <div class="mq-modal-field mq-modal-field-block">
+                    <span class="mq-modal-label">Latest Audit Note</span>
+                    <p class="mq-modal-note" data-moderation-modal-latest-note>No moderation notes recorded yet.</p>
+                </div>
+
+                <div class="mq-modal-field mq-modal-field-block">
+                    <label class="mq-modal-label" for="moderation-notes">Audit Notes</label>
+                    <textarea
+                        id="moderation-notes"
+                        class="mq-modal-textarea"
+                        data-moderation-notes
+                        placeholder="Add moderation notes for the audit trail..."
+                    ></textarea>
+                </div>
+            </div>
+
+            <div class="mq-modal-actions">
+                <button class="btn-outline" type="button" data-moderation-close>Cancel</button>
+                <button class="btn-review btn-review-danger" type="button" data-moderation-decision="reject">Reject</button>
+                <button class="btn-review" type="button" data-moderation-decision="approve">Approve</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/features/admin/moderation-queue/ModerationQueue.js"></script>
+</body>
+</html>

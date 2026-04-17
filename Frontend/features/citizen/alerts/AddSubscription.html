@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+    <link rel="stylesheet" href="/features/citizen/alerts/AddSubscription.css" />
+  
+    <!-- Auth Guard -->
+    <script type="module">
+      import { checkAuth } from '/core/auth/authGuard.js';
+      checkAuth();
+    </script></head>
+
+  <body class="alerts-add-subscription">
+    <div class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 class="modal-title" data-alert-modal-title>
+            Add Alert Subscription
+          </h2>
+          <button class="close-btn" aria-label="Close modal">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <form id="alertSubscriptionForm" data-alert-subscription-form novalidate>
+            <div class="form-group">
+              <label class="form-label" for="alertLocationInput">Location</label>
+              <input
+                id="alertLocationInput"
+                class="form-input"
+                type="text"
+                name="location"
+                minlength="3"
+                maxlength="100"
+                placeholder="Enter area / city / region"
+                autocomplete="off"
+                data-alert-location-input
+              />
+              <p class="form-help">
+                Use a real, specific location, just like when submitting a new
+                report.
+              </p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Incident Categories</label>
+              <div class="checkbox-grid">
+                <label class="checkbox-card">
+                  <input
+                    type="checkbox"
+                    class="sr-only"
+                    value="CLOSURE"
+                    data-alert-category-input
+                  />
+                  <div class="checkbox-custom"></div>
+                  <span class="checkbox-label">Road Closure</span>
+                </label>
+
+                <label class="checkbox-card">
+                  <input
+                    type="checkbox"
+                    class="sr-only"
+                    value="DELAY"
+                    data-alert-category-input
+                  />
+                  <div class="checkbox-custom"></div>
+                  <span class="checkbox-label">Delay</span>
+                </label>
+
+                <label class="checkbox-card">
+                  <input
+                    type="checkbox"
+                    class="sr-only"
+                    value="ACCIDENT"
+                    data-alert-category-input
+                  />
+                  <div class="checkbox-custom"></div>
+                  <span class="checkbox-label">Accident</span>
+                </label>
+
+                <label class="checkbox-card">
+                  <input
+                    type="checkbox"
+                    class="sr-only"
+                    value="WEATHER_HAZARD"
+                    data-alert-category-input
+                  />
+                  <div class="checkbox-custom"></div>
+                  <span class="checkbox-label">Weather Hazard</span>
+                </label>
+              </div>
+            </div>
+
+            <p class="form-feedback" data-alert-form-feedback hidden></p>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button">Cancel</button>
+          <button
+            class="btn btn-primary"
+            type="button"
+            data-alert-save-button
+            form="alertSubscriptionForm"
+          >
+            Save Subscription
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
