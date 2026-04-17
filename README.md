@@ -1,7 +1,6 @@
 <p align="center">
-  <img src="wasel-logo (2).png" width="250"/>
+  <img src="wasel-logo (2).png" width="320"/>
 </p>
-
 <h1 align="center">🚀 Wasel-Palestine</h2>
 
 <p align="center">
