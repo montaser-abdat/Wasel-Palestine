@@ -26,7 +26,8 @@ Please include:
 Contact:
 - Montaser A.
 - [Ameed D.](mailto:omdeh4@gmail.com) 
-- Mohammad A. Mazen Kh.
+- Mohammad A.
+- Mazen Kh.
 
 We will review reports as availability allows. Response times are not guaranteed.
 If the report is accepted, we may fix it in a future private revision.
