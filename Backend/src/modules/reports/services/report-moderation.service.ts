@@ -10,6 +10,7 @@ import { ReportModerationAudit } from '../entities/report-moderation-audit.entit
 import { Report } from '../entities/report.entity';
 import { ReportModerationAction } from '../enums/report-moderation-action.enum';
 import { ReportStatus } from '../enums/report-status.enum';
+import { ReportsService } from './reports.service';
 
 @Injectable()
 export class ReportModerationService {
@@ -21,6 +22,7 @@ export class ReportModerationService {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
     private readonly dataSource: DataSource,
+    private readonly reportsService: ReportsService,
   ) {}
 
   private async findOne(id: number) {
@@ -68,11 +70,9 @@ export class ReportModerationService {
   private ensureNotAlreadyInStatus(
     report: Report,
     targetStatus: ReportStatus,
-    alreadyMessage: string,
-  ) {
-    if (report.status === targetStatus) {
-      throw new BadRequestException(alreadyMessage);
-    }
+    _alreadyMessage: string,
+  ): boolean {
+    return report.status === targetStatus;
   }
 
   private ensureAllowedSourceStatuses(
@@ -99,7 +99,7 @@ export class ReportModerationService {
     invalidTransitionMessage = 'Report is not in a valid status for this action',
     notes?: string,
   ) {
-    return this.dataSource.transaction(async (manager) => {
+    const saved = await this.dataSource.transaction(async (manager) => {
       const reportRepo = manager.getRepository(Report);
       const auditRepo = manager.getRepository(ReportModerationAudit);
       const userRepo = manager.getRepository(User);
@@ -116,7 +116,9 @@ export class ReportModerationService {
         throw new NotFoundException('Moderator user not found');
       }
 
-      this.ensureNotAlreadyInStatus(report, targetStatus, alreadyMessage);
+      if (this.ensureNotAlreadyInStatus(report, targetStatus, alreadyMessage)) {
+        return report;
+      }
       this.ensureAllowedSourceStatuses(
         report,
         allowedSourceStatuses,
@@ -129,6 +131,8 @@ export class ReportModerationService {
       await this.logAction(auditRepo, id, action, performedByUserId, notes);
       return saved;
     });
+
+    return this.reportsService.findOne(saved.reportId);
   }
 
   async markUnderReview(id: number, performedByUserId: number, notes?: string) {
@@ -151,8 +155,8 @@ export class ReportModerationService {
       ReportStatus.APPROVED,
       ReportModerationAction.APPROVED,
       'Report is already approved',
-      [ReportStatus.UNDER_REVIEW],
-      'Only reports under review can be approved',
+      [ReportStatus.PENDING, ReportStatus.UNDER_REVIEW],
+      'Only pending or under-review reports can be approved',
       notes,
     );
   }
@@ -164,8 +168,8 @@ export class ReportModerationService {
       ReportStatus.REJECTED,
       ReportModerationAction.REJECTED,
       'Report is already rejected',
-      [ReportStatus.UNDER_REVIEW],
-      'Only reports under review can be rejected',
+      [ReportStatus.PENDING, ReportStatus.UNDER_REVIEW],
+      'Only pending or under-review reports can be rejected',
       notes,
     );
   }
@@ -177,8 +181,8 @@ export class ReportModerationService {
       ReportStatus.RESOLVED,
       ReportModerationAction.RESOLVED,
       'Report is already resolved',
-      [],
-      'Report is not in a valid status for this action',
+      [ReportStatus.PENDING, ReportStatus.UNDER_REVIEW, ReportStatus.APPROVED, ReportStatus.REJECTED],
+      'Only pending, under-review, approved, or rejected reports can be resolved',
       notes,
     );
   }

@@ -1,30 +1,27 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AuthModule } from './modules/auth/auth.module';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 import { existsSync } from 'fs';
-
 import { ConfigModule } from '@nestjs/config';
-import { CheckpointsModule } from './modules/checkpoints/checkpoints.module';
-import { IncidentsModule } from './modules/incidents/incidents.module';
-import { AuthMiddleware } from './core/middleware/authMiddleware';
-import { typeOrmConfig } from './core/database/typeorm.config';
+import { ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { typeOrmConfig } from './core/database/typeorm.config';
+
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { createTypeOrmConfig } from './core/database/typeorm.config';
 import { AuthMiddleware } from './core/middleware/authMiddleware';
-import { AlertsModule } from './modules/alerts/alerts.module';
+
+import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { CheckpointsModule } from './modules/checkpoints/checkpoints.module';
 import { IncidentsModule } from './modules/incidents/incidents.module';
+import { AlertsModule } from './modules/alerts/alerts.module';
 import { MapModule } from './modules/map/map.module';
-
 import { ReportsModule } from './modules/reports/reports.module';
 import { RouteModule } from './modules/route/route.module';
 import { WeatherModule } from './modules/weather/weather.module';
+
 const projectRoot = process.cwd();
 const workspaceRoot = existsSync(join(projectRoot, 'Frontend'))
   ? projectRoot
@@ -32,6 +29,7 @@ const workspaceRoot = existsSync(join(projectRoot, 'Frontend'))
 const envFilePath = Array.from(
   new Set([join(projectRoot, '.env'), join(workspaceRoot, '.env')]),
 );
+
 @Module({
   imports: [
     UsersModule,
@@ -40,7 +38,11 @@ const envFilePath = Array.from(
       isGlobal: true,
       envFilePath,
     }),
-    TypeOrmModule.forRoot(typeOrmConfig),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) =>
+        createTypeOrmConfig(configService),
+    }),
     CheckpointsModule,
     IncidentsModule,
     MapModule,
@@ -54,7 +56,6 @@ const envFilePath = Array.from(
     EventEmitterModule.forRoot(),
     AlertsModule,
   ],
-
   controllers: [AppController],
   providers: [AppService],
 })
