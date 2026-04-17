@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" width="280"/>
+  <img src="wasel-logo.png" width="280"/>
 </p>
 
 <h2 align="center">🚀 Wasel-Palestine</h2>
