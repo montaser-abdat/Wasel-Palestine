@@ -656,3 +656,5 @@ This project is intentionally built as a **learning-focused MVP**:
 **All rights reserved © 2026.**  
 This project is for **educational purposes** and is **not open source**.  
 Unauthorized use, copying, modification, or distribution is not permitted.
+[LICENSE](./LICENSE)
+
