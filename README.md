@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="wasel-logo (2).png" width="300"/>
+  <img src="wasel-logo (2).png" width="250"/>
 </p>
 
-<h2 align="center">🚀 Wasel-Palestine</h2>
+<h1 align="center">🚀 Wasel-Palestine</h2>
 
 <p align="center">
   Smart Route Optimization & Checkpoint Awareness System
