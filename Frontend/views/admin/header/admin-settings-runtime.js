@@ -677,30 +677,6 @@ function applyChromeLanguage() {
   updateDocumentTitle();
 }
 
-function applyPageLanguage() {
-  const pageRoot = document.getElementById('flexible_main');
-  if (!pageRoot || currentSettings.primaryLanguage !== 'Arabic') {
-    return;
-  }
-
-  pageRoot.querySelectorAll('h1, h2, h3, .title, .card-title, .form-label, .policy-title, .api-title, .btn-discard, .btn-save').forEach((element) => {
-    const originalText = getTranslatableElementText(element);
-    element.dataset.i18nSourceText = originalText;
-
-    const translatedText = translate(originalText);
-    if (translatedText && translatedText !== originalText) {
-      setTranslatableElementText(element, translatedText);
-    }
-  });
-
-  pageRoot.querySelectorAll('.subtitle').forEach((element) => {
-    const originalText =
-      element.dataset.i18nSourceText || element.textContent.trim();
-    element.dataset.i18nSourceText = originalText;
-    setTranslatableElementText(element, translate(originalText));
-  });
-}
-
 function applyAdminSystemSettings(settings) {
   currentSettings = normalizeSettings(settings);
   window.AdminSystemSettings = {
