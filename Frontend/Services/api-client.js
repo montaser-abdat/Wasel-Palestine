@@ -25,6 +25,24 @@ function getApiClient() {
   return window.appApiClient;
 }
 
+function isCitizenPreviewActive() {
+  if (window.CitizenPreview?.isActive?.()) {
+    return true;
+  }
+
+  try {
+    const params = new URLSearchParams(window.location.search || '');
+    const queryValue = String(params.get('adminPreview') || '').toLowerCase();
+    if (queryValue === '1' || queryValue === 'true' || queryValue === 'yes') {
+      return true;
+    }
+
+    return window.sessionStorage?.getItem('wasel.adminCitizenPreview') === '1';
+  } catch (_error) {
+    return false;
+  }
+}
+
 function buildRequestConfig(path, options = {}) {
   const token = window.localStorage?.getItem('token');
   const headers = {
@@ -35,7 +53,12 @@ function buildRequestConfig(path, options = {}) {
     headers['Content-Type'] = 'application/json';
   }
 
-  if (token && options.includeAuth !== false && !headers.Authorization) {
+  if (
+    token &&
+    options.includeAuth !== false &&
+    !isCitizenPreviewActive() &&
+    !headers.Authorization
+  ) {
     headers.Authorization = 'Bearer ' + token;
   }
 
@@ -55,7 +78,10 @@ function buildAbsoluteUrl(path, params) {
   // Strip the leading slash from the path so it appends correctly to the base URL
   const cleanPath = path.startsWith('/') ? path.substring(1) : path;
 
-  const url = new URL(cleanPath, baseUrl.endsWith('/') ? baseUrl : baseUrl + '/');
+  const url = new URL(
+    cleanPath,
+    baseUrl.endsWith('/') ? baseUrl : baseUrl + '/',
+  );
 
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
@@ -69,15 +95,18 @@ function buildAbsoluteUrl(path, params) {
 }
 
 async function requestWithFetch(config) {
-  const response = await window.fetch(buildAbsoluteUrl(config.url, config.params), {
-    method: config.method,
-    headers: config.headers,
-    body: config.data ? JSON.stringify(config.data) : undefined,
-    signal: config.signal,
-  });
+  const response = await window.fetch(
+    buildAbsoluteUrl(config.url, config.params),
+    {
+      method: config.method,
+      headers: config.headers,
+      body: config.data ? JSON.stringify(config.data) : undefined,
+      signal: config.signal,
+    },
+  );
 
   const text = await response.text();
-  let data = text;
+  let data;
 
   try {
     data = text ? JSON.parse(text) : null;

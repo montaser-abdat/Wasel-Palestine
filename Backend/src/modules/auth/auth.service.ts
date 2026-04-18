@@ -15,11 +15,17 @@ import { RegisterDto } from './dto/signup.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { SafeUserResponse, toSafeUserResponse } from '../users/users.constants';
 
+type AuthTokenResponse = {
+  access_token: string;
+  user: SafeUserResponse;
+};
+
 type SocialLoginUser = {
   email: string;
   firstname?: string;
   lastname?: string;
   name?: string;
+  profileImage?: string | null;
   provider: string;
   providerId?: string;
 };
@@ -39,7 +45,7 @@ export class AuthService {
   async signIn(
     email: string,
     password: string,
-  ): Promise<{ access_token: string; user: any }> {
+  ): Promise<AuthTokenResponse> {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
@@ -63,7 +69,7 @@ export class AuthService {
    */
   async register(
     registerDto: RegisterDto,
-  ): Promise<{ access_token: string; user: any }> {
+  ): Promise<AuthTokenResponse> {
     const user = await this.usersService.create({
       email: registerDto.email,
       password: registerDto.password,
@@ -76,7 +82,7 @@ export class AuthService {
     return this.generateToken(user);
   }
 
-  private generateToken(user: User): { access_token: string; user: any } {
+  private generateToken(user: User): AuthTokenResponse {
     const payload = {
       sub: user.id,
       email: user.email,
@@ -107,6 +113,7 @@ export class AuthService {
         firstname: googleUser?.given_name || '',
         lastname: googleUser?.family_name || '',
         name: googleUser?.name || '',
+        profileImage: googleUser?.picture || null,
         provider: 'google',
         providerId: googleUser?.sub,
       });
@@ -213,6 +220,7 @@ export class AuthService {
         firstname: linkedinUser?.given_name || '',
         lastname: linkedinUser?.family_name || '',
         name: linkedinUser?.name || '',
+        profileImage: linkedinUser?.picture || null,
         provider: 'linkedin',
         providerId: linkedinUser?.sub,
       });
@@ -236,7 +244,7 @@ export class AuthService {
 
   async socialLogin(
     socialUser: SocialLoginUser,
-  ): Promise<{ access_token: string; user: any }> {
+  ): Promise<AuthTokenResponse> {
     if (!socialUser?.email) {
       throw new UnauthorizedException(
         `${this.getProviderName(socialUser?.provider)} email not found`,
@@ -248,6 +256,7 @@ export class AuthService {
       firstname,
       lastname,
       email: socialUser.email,
+      profileImage: socialUser.profileImage,
       provider: socialUser.provider,
       providerId: socialUser.providerId,
     });
@@ -264,12 +273,10 @@ export class AuthService {
     userId: number,
     updateProfileDto: UpdateProfileDto,
   ): Promise<SafeUserResponse> {
-    console.log('🔵 Auth Service - updateProfile called with userId:', userId, 'DTO:', JSON.stringify(updateProfileDto));
     const user = await this.usersService.updateCurrentUser(
       userId,
       updateProfileDto,
     );
-    console.log('🟢 Auth Service - User updated successfully:', user.id, 'firstname:', user.firstname, 'lastname:', user.lastname);
     return this.toAuthUserResponse(user);
   }
 

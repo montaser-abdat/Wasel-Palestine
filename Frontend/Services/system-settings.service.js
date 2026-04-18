@@ -1,5 +1,27 @@
+import { apiGet, apiPatch } from '/Services/api-client.js';
+
 const DRAFT_STORAGE_KEY = 'wasel.admin.system-settings.draft';
 const APPLIED_STORAGE_KEY = 'wasel.admin.system-settings.applied';
+const SECRET_FIELDS = ['routingApiKey', 'weatherApiKey'];
+const STORAGE_SAFE_FIELDS = [
+  'platformName',
+  'primaryLanguage',
+  'timezone',
+  'accessTokenExpiry',
+  'refreshTokenExpiry',
+  'minPasswordLength',
+  'requireMixedCase',
+  'requireNumeric',
+  'requireSpecialCharacters',
+  'apiBaseUrl',
+  'routingEndpointUrl',
+  'routingTimeout',
+  'routingCacheTtl',
+  'weatherEndpointUrl',
+  'weatherTimeout',
+  'weatherCacheTtl',
+  'weatherFallbackCoords',
+];
 
 const DEFAULT_ENV = {
   JWT_EXPIRES_IN: '1h',
@@ -15,11 +37,19 @@ const DEFAULT_ENV = {
   WEATHER_API_CACHE_TTL: '30m',
 };
 
-const WEATHER_API_FALLBACK_KEY = '51e8b6c810274f0296602528261803';
 const DEFAULT_PLATFORM_NAME = 'Wasel Palestine';
 const DEFAULT_PRIMARY_LANGUAGE = 'English';
+const ALLOWED_PRIMARY_LANGUAGES = new Set(['English', 'Arabic']);
 
 let cachedEnv = null;
+let runtimeSecretOverrides = {
+  applied: Object.create(null),
+  draft: Object.create(null),
+};
+
+function hasOwn(object, key) {
+  return Object.prototype.hasOwnProperty.call(object, key);
+}
 
 function readJsonStorage(key) {
   try {
@@ -36,10 +66,121 @@ function writeJsonStorage(key, value) {
   return value;
 }
 
+// Keep API keys in memory so the UI can rehydrate them without writing secrets to localStorage.
+function captureRuntimeSecretOverrides(snapshot, scope) {
+  if (!hasOwn(runtimeSecretOverrides, scope)) {
+    return;
+  }
+
+  if (!snapshot || typeof snapshot !== 'object') {
+    runtimeSecretOverrides[scope] = Object.create(null);
+    return;
+  }
+
+  const scopedOverrides = runtimeSecretOverrides[scope];
+
+  SECRET_FIELDS.forEach((field) => {
+    if (!hasOwn(snapshot, field)) {
+      return;
+    }
+
+    const normalizedValue = String(snapshot[field] || '').trim();
+    if (normalizedValue) {
+      scopedOverrides[field] = normalizedValue;
+      return;
+    }
+
+    delete scopedOverrides[field];
+  });
+}
+
+function applyRuntimeSecretOverrides(snapshot, scope) {
+  if (!hasOwn(runtimeSecretOverrides, scope)) {
+    return snapshot;
+  }
+
+  if (!snapshot || typeof snapshot !== 'object') {
+    return snapshot;
+  }
+
+  const hydratedSnapshot = { ...snapshot };
+  const scopedOverrides = runtimeSecretOverrides[scope];
+
+  SECRET_FIELDS.forEach((field) => {
+    if (hasOwn(scopedOverrides, field)) {
+      hydratedSnapshot[field] = scopedOverrides[field];
+    }
+  });
+
+  return hydratedSnapshot;
+}
+
+function clearRuntimeSecretOverrides(scope) {
+  if (hasOwn(runtimeSecretOverrides, scope)) {
+    runtimeSecretOverrides[scope] = Object.create(null);
+  }
+}
+
+function buildStorageSafeSnapshot(snapshot) {
+  if (!snapshot || typeof snapshot !== 'object') {
+    return snapshot;
+  }
+
+  return STORAGE_SAFE_FIELDS.reduce((storageSnapshot, field) => {
+    if (hasOwn(snapshot, field)) {
+      storageSnapshot[field] = snapshot[field];
+    }
+    return storageSnapshot;
+  }, {});
+}
+
+function normalizePrimaryLanguage(value) {
+  const normalizedValue = String(value || '').trim();
+  return ALLOWED_PRIMARY_LANGUAGES.has(normalizedValue)
+    ? normalizedValue
+    : DEFAULT_PRIMARY_LANGUAGE;
+}
+
+function normalizePersistedGeneralSettings(settings) {
+  if (!settings || typeof settings !== 'object') {
+    return null;
+  }
+
+  return {
+    platformName:
+      String(settings.platformName || '').trim() || DEFAULT_PLATFORM_NAME,
+    primaryLanguage: normalizePrimaryLanguage(settings.primaryLanguage),
+  };
+}
+
+async function loadPersistedGeneralSettings() {
+  try {
+    return normalizePersistedGeneralSettings(await apiGet('/system-settings'));
+  } catch (error) {
+    console.warn('Could not load persisted system settings.', error);
+    return null;
+  }
+}
+
+async function persistGeneralSettings(snapshot) {
+  const platformName = String(snapshot?.platformName || '').trim();
+  const primaryLanguage = normalizePrimaryLanguage(snapshot?.primaryLanguage);
+
+  const response = await apiPatch('/system-settings', {
+    platformName,
+    primaryLanguage,
+  });
+
+  return normalizePersistedGeneralSettings(response);
+}
+
 function mapTimezoneToOptionLabel(timezone) {
   const normalizedTimezone = String(timezone || '').trim();
 
-  if (normalizedTimezone === 'Asia/Hebron' || normalizedTimezone === 'Asia/Jerusalem') {
+  if (
+    normalizedTimezone === 'Asia/Hebron' ||
+    normalizedTimezone === 'Asia/Jerusalem'
+  ) {
     return 'Asia/Jerusalem (GMT+03:00)';
   }
 
@@ -61,7 +202,10 @@ function inferEnvironment(apiBaseUrl) {
     return 'Unknown';
   }
 
-  if (normalizedUrl.includes('localhost') || normalizedUrl.includes('127.0.0.1')) {
+  if (
+    normalizedUrl.includes('localhost') ||
+    normalizedUrl.includes('127.0.0.1')
+  ) {
     return 'Local';
   }
 
@@ -74,7 +218,9 @@ function inferEnvironment(apiBaseUrl) {
 
 function maskSecret(value) {
   const normalizedValue = String(value || '');
-  return normalizedValue ? '*'.repeat(Math.min(Math.max(normalizedValue.length, 8), 16)) : '';
+  return normalizedValue
+    ? '*'.repeat(Math.min(Math.max(normalizedValue.length, 8), 16))
+    : '';
 }
 
 function buildLinkedApis(apiBaseUrl, envOrSnapshot) {
@@ -110,12 +256,15 @@ async function probePlatformApi(apiBaseUrl) {
   const startTime = window.performance?.now?.() ?? Date.now();
 
   try {
-    const response = await fetch(`${normalizedUrl.replace(/\/$/, '')}/incidents/active-count`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await fetch(
+      `${normalizedUrl.replace(/\/$/, '')}/incidents/active-count`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       },
-    });
+    );
 
     const endTime = window.performance?.now?.() ?? Date.now();
     const durationMs = Math.max(0, Math.round(endTime - startTime));
@@ -134,7 +283,8 @@ async function probePlatformApi(apiBaseUrl) {
   } catch (_error) {
     return {
       status: 'Unreachable',
-      detail: 'Platform API could not be reached from the current frontend runtime.',
+      detail:
+        'Platform API could not be reached from the current frontend runtime.',
     };
   }
 }
@@ -163,26 +313,6 @@ async function loadEnv() {
   }
 
   cachedEnv = { ...DEFAULT_ENV };
-
-  try {
-    const response = await fetch('/.env', { cache: 'no-cache' });
-
-    if (response.ok) {
-      const text = await response.text();
-      text.split(/\r?\n/).forEach((line) => {
-        const match = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/i);
-        if (match?.[1]) {
-          cachedEnv[match[1]] = match[2];
-        }
-      });
-    }
-  } catch (error) {
-    console.warn('Could not load .env for system settings defaults.', error);
-  }
-
-  if (!cachedEnv.WEATHER_API_KEY) {
-    cachedEnv.WEATHER_API_KEY = WEATHER_API_FALLBACK_KEY;
-  }
 
   return cachedEnv;
 }
@@ -258,6 +388,7 @@ function applyApiBaseUrl(apiBaseUrl) {
 export async function loadSystemSettingsSnapshot() {
   const env = await loadEnv();
   const defaults = buildDefaults(env);
+  const persistedGeneralSettings = await loadPersistedGeneralSettings();
   const appliedConfig = readJsonStorage(APPLIED_STORAGE_KEY);
   const draft = readJsonStorage(DRAFT_STORAGE_KEY);
 
@@ -265,31 +396,46 @@ export async function loadSystemSettingsSnapshot() {
     ? {
       ...defaults,
       ...appliedConfig,
+      ...(persistedGeneralSettings || {}),
       configSource: 'Saved Runtime Override',
       environment: inferEnvironment(appliedConfig.apiBaseUrl || defaults.apiBaseUrl),
     }
-    : defaults;
+    : {
+      ...defaults,
+      ...(persistedGeneralSettings || {}),
+    };
 
   const snapshot = draft
     ? {
-      ...baseSnapshot,
-      ...draft,
-      configSource: appliedConfig ? 'Saved Runtime Override + Draft' : 'Draft',
-      environment: inferEnvironment(draft.apiBaseUrl || baseSnapshot.apiBaseUrl),
-    }
+        ...baseSnapshot,
+        ...draft,
+        configSource: appliedConfig
+          ? 'Saved Runtime Override + Draft'
+          : 'Draft',
+        environment: inferEnvironment(
+          draft.apiBaseUrl || baseSnapshot.apiBaseUrl,
+        ),
+      }
     : baseSnapshot;
 
-  const linkedApis = buildLinkedApis(snapshot.apiBaseUrl, snapshot);
-  const platformProbe = await probePlatformApi(snapshot.apiBaseUrl);
+  let hydratedSnapshot = applyRuntimeSecretOverrides(snapshot, 'applied');
+  if (draft) {
+    hydratedSnapshot = applyRuntimeSecretOverrides(hydratedSnapshot, 'draft');
+  }
+  const linkedApis = buildLinkedApis(
+    hydratedSnapshot.apiBaseUrl,
+    hydratedSnapshot,
+  );
+  const platformProbe = await probePlatformApi(hydratedSnapshot.apiBaseUrl);
 
   return {
-    ...snapshot,
-    routingApiKeyMasked: maskSecret(snapshot.routingApiKey),
-    weatherApiKeyMasked: maskSecret(snapshot.weatherApiKey),
+    ...hydratedSnapshot,
+    routingApiKeyMasked: maskSecret(hydratedSnapshot.routingApiKey),
+    weatherApiKeyMasked: maskSecret(hydratedSnapshot.weatherApiKey),
     linkedApis,
     runtimeStatus: buildRuntimeSummary(
       {
-        ...snapshot,
+        ...hydratedSnapshot,
         linkedApis,
       },
       platformProbe,
@@ -298,27 +444,47 @@ export async function loadSystemSettingsSnapshot() {
 }
 
 export function saveSystemSettingsDraft(draft) {
-  return writeJsonStorage(DRAFT_STORAGE_KEY, draft);
+  captureRuntimeSecretOverrides(draft, 'draft');
+  return writeJsonStorage(DRAFT_STORAGE_KEY, buildStorageSafeSnapshot(draft));
 }
 
-export function applySystemSettings(snapshot) {
-  const appliedSnapshot = {
+export async function applySystemSettings(snapshot) {
+  captureRuntimeSecretOverrides(snapshot, 'applied');
+  clearRuntimeSecretOverrides('draft');
+  const persistedGeneralSettings = await persistGeneralSettings(snapshot);
+  const baseAppliedSnapshot = {
     ...snapshot,
+    ...(persistedGeneralSettings || {}),
     environment: inferEnvironment(snapshot.apiBaseUrl),
     configSource: 'Saved Runtime Override',
-    linkedApis: buildLinkedApis(snapshot.apiBaseUrl, snapshot),
-    routingApiKeyMasked: maskSecret(snapshot.routingApiKey),
-    weatherApiKeyMasked: maskSecret(snapshot.weatherApiKey),
+  };
+  const storedAppliedSnapshot = buildStorageSafeSnapshot(baseAppliedSnapshot);
+
+  const hydratedSnapshot = applyRuntimeSecretOverrides(
+    baseAppliedSnapshot,
+    'applied',
+  );
+  const appliedSnapshot = {
+    ...hydratedSnapshot,
+    linkedApis: buildLinkedApis(hydratedSnapshot.apiBaseUrl, hydratedSnapshot),
+    routingApiKeyMasked: maskSecret(hydratedSnapshot.routingApiKey),
+    weatherApiKeyMasked: maskSecret(hydratedSnapshot.weatherApiKey),
   };
 
   applyApiBaseUrl(appliedSnapshot.apiBaseUrl);
-  writeJsonStorage(APPLIED_STORAGE_KEY, appliedSnapshot);
+  writeJsonStorage(APPLIED_STORAGE_KEY, storedAppliedSnapshot);
   window.localStorage?.removeItem(DRAFT_STORAGE_KEY);
+  window.dispatchEvent(
+    new CustomEvent('admin:system-settings-updated', {
+      detail: appliedSnapshot,
+    }),
+  );
 
   return appliedSnapshot;
 }
 
 export async function resetSystemSettingsDraft() {
+  clearRuntimeSecretOverrides('draft');
   window.localStorage?.removeItem(DRAFT_STORAGE_KEY);
   return loadSystemSettingsSnapshot();
 }

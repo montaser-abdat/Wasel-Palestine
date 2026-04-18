@@ -1,8 +1,16 @@
-import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, Unique } from 'typeorm';
-import { Exclude } from 'class-transformer';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+  Unique,
+} from 'typeorm';
 import { CheckpointStatus } from '../enums/checkpoint-status.enum';
 import { CheckpointStatusHistory } from './status-history.entity';
 import { Incident } from '../../incidents/entities/incident.entity';
+import { ModerationStatus } from '../../../common/enums/moderation-status.enum';
 
 const decimalColumnTransformer = {
   to: (value: number | null | undefined): number | null | undefined => value,
@@ -11,14 +19,13 @@ const decimalColumnTransformer = {
 };
 /**
  * Represents a checkpoint entity stored in the database.
- * 
+ *
  * This entity is used to store information about geographical checkpoints
  * including their name, location (latitude & longitude), status, and metadata.
  */
 @Entity('checkpoint')
 @Unique(['name'])
 export class Checkpoint {
-
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -58,14 +65,44 @@ export class Checkpoint {
    * Defaults to OPEN.
    */
 
-  @Column({ type: 'enum', enum: CheckpointStatus, default: CheckpointStatus.ACTIVE })
+  @Column({ type: 'enum', enum: CheckpointStatus, default: CheckpointStatus.OPEN })
   currentStatus: CheckpointStatus;
 
-  /**
-    * Timestamp when the checkpoint was created.
-    * Automatically generated.
-    */
+  @Column({
+    type: 'enum',
+    enum: ModerationStatus,
+    default: ModerationStatus.APPROVED,
+  })
+  moderationStatus: ModerationStatus;
 
+  @Column({ type: 'simple-json', nullable: true })
+  pendingChanges?: Record<string, unknown> | null;
+
+  @Column({ type: 'int', nullable: true })
+  createdByUserId?: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  updatedByUserId?: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  approvedByUserId?: number | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  approvedAt?: Date | null;
+
+  @Column({ type: 'int', nullable: true })
+  rejectedByUserId?: number | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  rejectedAt?: Date | null;
+
+  @Column({ type: 'text', nullable: true })
+  rejectionReason?: string | null;
+
+  /**
+   * Timestamp when the checkpoint was created.
+   * Automatically generated.
+   */
 
   @OneToMany(
     () => CheckpointStatusHistory,
