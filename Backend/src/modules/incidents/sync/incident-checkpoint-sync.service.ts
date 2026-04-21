@@ -19,6 +19,8 @@ export type IncidentCheckpointSnapshot = {
   checkpointId: number | null;
   isVerified: boolean;
   status: IncidentStatus;
+  type: IncidentType;
+  description: string;
 };
 
 type SaveIncidentWithCheckpointSyncOptions = {
@@ -53,6 +55,8 @@ export class IncidentCheckpointSyncService {
       checkpointId: this.getIncidentCheckpointId(incident),
       isVerified: Boolean(incident.isVerified),
       status: incident.status,
+      type: incident.type,
+      description: incident.description,
     };
   }
 
@@ -159,6 +163,13 @@ export class IncidentCheckpointSyncService {
           incident: savedIncident,
           oldStatus: previousSnapshot?.status ?? savedIncident.status,
           newStatus: savedIncident.status,
+          statusAtTime: savedIncident.status,
+          oldType: previousSnapshot?.type ?? savedIncident.type,
+          newType: savedIncident.type,
+          typeAtTime: savedIncident.type,
+          oldDescription:
+            previousSnapshot?.description ?? savedIncident.description,
+          newDescription: savedIncident.description,
           changedByUserId,
         });
 
