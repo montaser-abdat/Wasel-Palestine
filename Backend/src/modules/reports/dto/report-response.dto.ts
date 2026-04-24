@@ -270,6 +270,8 @@ export class ReportPaginatedResponseDto {
         createdAt: '2026-04-13T08:00:00.000Z',
         updatedAt: '2026-04-13T09:05:00.000Z',
         duplicateOf: null,
+        similarReportsCount: 2,
+        isLatestLocationReport: true,
         confidenceScore: 76,
         interactionSummary: {
           upVotes: 12,
@@ -306,6 +308,102 @@ export class ReportPaginatedResponseDto {
     },
   })
   counts: ReportCountsResponseDto;
+}
+
+export class ReportHistoryMetaResponseDto {
+  @ApiProperty({
+    description: 'The current visible report id used as the history anchor.',
+    example: 42,
+  })
+  reportId: number;
+
+  @ApiProperty({
+    description: 'The grouped location shared by the history entries.',
+    example: 'Awarta checkpoint',
+  })
+  location: string;
+
+  @ApiProperty({
+    description: 'The latest visible category/state for this location thread.',
+    enum: ReportCategory,
+    example: ReportCategory.ROAD_CLOSURE,
+  })
+  category: ReportCategory;
+
+  @ApiProperty({
+    description: 'Number of previous reports returned for this group.',
+    example: 2,
+  })
+  historyCount: number;
+}
+
+export class ReportHistoryEnvelopeResponseDto {
+  @ApiProperty({
+    description:
+      'Previous state updates for the same location, newest first.',
+    type: [ReportResponseDto],
+  })
+  data: ReportResponseDto[];
+
+  @ApiProperty({
+    description: 'Summary of the location thread used for this history lookup.',
+    type: ReportHistoryMetaResponseDto,
+  })
+  meta: ReportHistoryMetaResponseDto;
+}
+
+export class ReportSimilarReportsMetaResponseDto {
+  @ApiProperty({
+    description: 'The report id used as the location-group anchor.',
+    example: 42,
+  })
+  reportId: number;
+
+  @ApiProperty({
+    description: 'The grouped location shared by the related reports.',
+    example: 'Awarta checkpoint',
+  })
+  location: string;
+
+  @ApiProperty({
+    description: 'The anchor report category/state.',
+    enum: ReportCategory,
+    example: ReportCategory.DELAY,
+  })
+  category: ReportCategory;
+
+  @ApiProperty({
+    description: 'Total related reports returned, including the latest report.',
+    example: 5,
+  })
+  total: number;
+
+  @ApiProperty({
+    description: 'Number of related reports excluding the latest/main report.',
+    example: 4,
+  })
+  similarReportsCount: number;
+
+  @ApiProperty({
+    description: 'The newest report id for this location group.',
+    example: 47,
+  })
+  latestReportId: number;
+}
+
+export class ReportSimilarReportsEnvelopeResponseDto {
+  @ApiProperty({
+    description:
+      'All reports for the same effective location, newest first.',
+    type: [ReportResponseDto],
+  })
+  data: ReportResponseDto[];
+
+  @ApiProperty({
+    description: 'Summary of the admin similar-reports lookup.',
+    type: ReportSimilarReportsMetaResponseDto,
+  })
+  meta: ReportSimilarReportsMetaResponseDto;
 }
 
 export class ReportInteractionResultResponseDto {

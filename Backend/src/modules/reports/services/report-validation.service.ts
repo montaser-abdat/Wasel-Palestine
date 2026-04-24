@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
-import { CreateReportDto } from '../dto/create-report.dto';
 import { Report } from '../entities/report.entity';
 import {
   getRecentOwnDuplicateReportThreshold,
@@ -10,10 +9,6 @@ import {
   OWN_DUPLICATE_REPORT_MESSAGE,
   SIMILAR_REPORT_LOCATION_RADIUS_METERS,
 } from '../utils/report-similarity.util';
-
-type CreateReportValidationInput = CreateReportDto & {
-  submittedByUserId: number;
-};
 
 @Injectable()
 export class ReportValidationService {

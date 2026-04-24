@@ -109,8 +109,8 @@ describe('ReportsService', () => {
   });
 
   it('defaults the community feed to all public non-rejected statuses', async () => {
-    const findReportsPageSpy = jest
-      .spyOn(service as any, 'findReportsPage')
+    const findCommunityReportsPageSpy = jest
+      .spyOn(service as any, 'findCommunityReportsPage')
       .mockResolvedValue({
         data: [],
         meta: {},
@@ -119,7 +119,7 @@ describe('ReportsService', () => {
 
     await service.findCommunityReports({} as any, 77);
 
-    expect(findReportsPageSpy).toHaveBeenCalledWith(
+    expect(findCommunityReportsPageSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         status: undefined,
         statuses: [
@@ -371,6 +371,7 @@ describe('ReportsService', () => {
 
     expect(serialized.isOwnReport).toBe(true);
     expect(serialized.canManage).toBe(true);
+    expect(serialized.canVote).toBe(false);
   });
 
   it('prevents the owner from managing an approved report', () => {
